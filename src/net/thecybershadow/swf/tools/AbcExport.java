@@ -17,7 +17,8 @@ import flash.util.FileUtils;
 public class AbcExport extends TagHandler {
 	public static void main(String[] args) throws IOException {
 		if (args.length != 1) {
-			System.err.println("Usage: AbcDump input.swf");
+			System.err.println("Exports DoABC tags from SWFs to individual .abc files.");
+			System.err.println("Usage: AbcExport input.swf");
 			return;
 		}
 			

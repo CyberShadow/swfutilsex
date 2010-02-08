@@ -25,7 +25,7 @@ public class Deobfuscator extends TagEncoder {
 	
 	public static void main(String[] args) throws IOException {
 		if (args.length < 2) {
-			System.out.println("Usage: Deobfuscator [-noreorder] [-dict dictionary.txt] input.swf output.swf");
+			System.err.println("Usage: Deobfuscator [-noreorder] [-dict dictionary.txt] input.swf output.swf");
 			return;
 		}
 			
