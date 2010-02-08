@@ -90,7 +90,6 @@ public class AbcDeobfuscator
 		"const"
 	};
 	
-	char[] hexChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 	final int OP_bkpt = 0x01;
 	final int OP_nop = 0x02;
 	final int OP_throw = 0x03;
@@ -249,11 +248,6 @@ public class AbcDeobfuscator
 	final int OP_debugline = 0xF0;
 	final int OP_debugfile = 0xF1;
 	final int OP_bkptline = 0xF2;
-	
-	String hex(byte b)
-	{
-		return new StringBuilder().append(hexChars[(b >> 4) & 0xF]).append(hexChars[b & 0xF]).toString();
-	}
 	
 	int readS24()
 	{
