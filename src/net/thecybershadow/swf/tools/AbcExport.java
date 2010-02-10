@@ -46,7 +46,9 @@ public class AbcExport extends TagHandler
 	{
 		try
 		{
-			FileOutputStream fos = new FileOutputStream(prefix + counter++ + ".abc");
+			String filename = prefix + counter + ".abc";
+			System.out.println("Writing DoABC tag \"" + tag.name + "\" with flag=" + tag.flag + " to " + filename);
+			FileOutputStream fos = new FileOutputStream(filename);
 			fos.write(tag.abc);
 			fos.close();
 		}
@@ -54,6 +56,7 @@ public class AbcExport extends TagHandler
 		{
 			e.printStackTrace();
 		}
+		counter++;
 	}
 
 	static String changeExtension(String originalName, String newExtension)
