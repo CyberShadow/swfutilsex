@@ -6,15 +6,12 @@
 package net.thecybershadow.swf.tools;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.TreeSet;
 import java.util.Vector;
-
-import flash.util.FileUtils;
 
 public class AbcDeobfuscator extends AbcProcessor
 {
@@ -50,10 +47,9 @@ public class AbcDeobfuscator extends AbcProcessor
 		}
 
 		File fin = new File(input);
-		URL url = FileUtils.toURL(fin);
-		InputStream in = url.openStream();
+		FileInputStream in = new FileInputStream(fin);
 		byte[] abc = new byte[(int) fin.length()];
-		in.read(abc);
+		in.read(abc); // FIXME
 		AbcDeobfuscator d = new AbcDeobfuscator(abc, params);
 		d.process();
 		FileOutputStream out = new FileOutputStream(output);
@@ -570,79 +566,6 @@ public class AbcDeobfuscator extends AbcProcessor
 			}
 			// out.println("");
 			System.out.println("======================================================================");
-		}
-	}
-
-	class MultiName
-	{
-		public MultiName()
-		{
-		}
-
-		public int kind;
-		public int long1;
-		public int long2;
-		public MultiName typeName;
-		public MultiName types[];
-
-		@Override
-		public String toString()
-		{
-			String s = "";
-
-			String[] nsSet;
-			int len;
-			int j;
-
-			switch (kind)
-			{
-				case 0x07: // QName
-				case 0x0D:
-					s = namespaceConstants[long1] + ":";
-					s += stringConstants[long2];
-					break;
-				case 0x0F: // RTQName
-				case 0x10:
-					s = stringConstants[long1];
-					break;
-				case 0x11: // RTQNameL
-				case 0x12:
-					s = "RTQNameL";
-					break;
-				case 0x13: // NameL
-				case 0x14:
-					s = "NameL";
-					break;
-				case 0x09:
-				case 0x0E:
-					nsSet = namespaceSetConstants[long2];
-					len = nsSet.length;
-					for (j = 0; j < len - 1; j++)
-					{
-						s += nsSet[j] + ",";
-					}
-					if (len > 0)
-						s += nsSet[len - 1] + ":";
-					s += stringConstants[long1];
-					break;
-				case 0x1B:
-				case 0x1C:
-					nsSet = namespaceSetConstants[long1];
-					len = nsSet.length;
-					for (j = 0; j < len - 1; j++)
-					{
-						s += nsSet[j] + ",";
-					}
-					if (len > 0)
-						s += nsSet[len - 1] + ":";
-					s += "null";
-					break;
-				case 0x1D:
-					s += typeName.toString();
-					for (int t = 0; t < types.length; t++)
-						s += types[t].toString();
-			}
-			return s;
 		}
 	}
 
