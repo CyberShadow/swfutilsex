@@ -2,6 +2,7 @@
 
 package net.thecybershadow.misc;
 
-public class RegexFilter {
+public class RegexFilter
+{
 
 }

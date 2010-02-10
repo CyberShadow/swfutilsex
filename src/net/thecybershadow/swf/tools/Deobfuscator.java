@@ -20,41 +20,41 @@ import flash.swf.tags.DoABC;
 import flash.swf.tags.SymbolClass;
 import flash.util.FileUtils;
 
-public class Deobfuscator extends TagEncoder {
+public class Deobfuscator extends TagEncoder
+{
 	DeobfuscationParameters params = new DeobfuscationParameters();
-	
-	public static void main(String[] args) throws IOException {
-		if (args.length < 2) {
+
+	public static void main(String[] args) throws IOException
+	{
+		if (args.length < 2)
+		{
 			System.err.println("Usage: Deobfuscator [-noreorder] [-dict dictionary.txt] input.swf output.swf");
 			return;
 		}
-			
+
 		Deobfuscator encoder = new Deobfuscator();
-		String input=null, output=null;
-		
-		for (int i=0; i<args.length; i++)
+		String input = null, output = null;
+
+		for (int i = 0; i < args.length; i++)
 		{
 			if (args[i].equals("-noreorder"))
 				encoder.params.reorderCode = false;
-			else
-			if (args[i].equals("-dict"))
+			else if (args[i].equals("-dict"))
 				encoder.params.loadDictionary(args[++i]);
-			else
-			if (input == null)
+			else if (input == null)
 				input = args[i];
-			else
-			if (output == null)
+			else if (output == null)
 				output = args[i];
 			else
 				System.err.println("Ignoring extraneous argument: " + args[i]);
 		}
-		
-		if (input==null || output==null)
+
+		if (input == null || output == null)
 		{
 			System.err.println("Input/output not specified");
 			return;
 		}
-		
+
 		URL url = FileUtils.toURL(new File(input));
 		InputStream in = url.openStream();
 		new TagDecoder(in, url).parse(encoder);
@@ -62,20 +62,26 @@ public class Deobfuscator extends TagEncoder {
 		FileOutputStream out = new FileOutputStream(output);
 		out.write(encoder.toByteArray());
 	}
-	
-	public void doABC(DoABC tag) {
+
+	@Override
+	public void doABC(DoABC tag)
+	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		AbcDeobfuscator ad = new AbcDeobfuscator(tag.abc, baos, params);
-		try {
+		try
+		{
 			ad.deobfuscate();
 			tag.abc = baos.toByteArray();
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			e.printStackTrace();
 			tag.abc = null;
 		}
 		super.doABC(tag);
 	}
 
+	@Override
 	public void symbolClass(SymbolClass tag)
 	{
 		HashMap<String, Tag> newMap = new HashMap<String, Tag>();

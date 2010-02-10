@@ -14,14 +14,17 @@ import flash.swf.TagHandler;
 import flash.swf.tags.DoABC;
 import flash.util.FileUtils;
 
-public class AbcExport extends TagHandler {
-	public static void main(String[] args) throws IOException {
-		if (args.length != 1) {
-			System.err.println("Exports DoABC tags from SWFs to individual .abc files.");
+public class AbcExport extends TagHandler
+{
+	public static void main(String[] args) throws IOException
+	{
+		if (args.length != 1)
+		{
+			System.err.println("Exports DoABC tags from a SWF to individual .abc files.");
 			System.err.println("Usage: AbcExport input.swf");
 			return;
 		}
-			
+
 		File file = new File(args[0]);
 		URL url = FileUtils.toURL(file);
 		AbcExport abcdump = new AbcExport(args[0].substring(0, args[0].lastIndexOf(".")));
@@ -29,30 +32,36 @@ public class AbcExport extends TagHandler {
 		new TagDecoder(in, url).parse(abcdump);
 		abcdump.finish();
 	}
-	
+
 	int counter = 0;
 	String prefix;
-	
-	public AbcExport(String prefix) {
+
+	public AbcExport(String prefix)
+	{
 		this.prefix = prefix;
 	}
 
-	public void doABC(DoABC tag) {
-		try {
+	@Override
+	public void doABC(DoABC tag)
+	{
+		try
+		{
 			FileOutputStream fos = new FileOutputStream(prefix + counter++ + ".abc");
 			fos.write(tag.abc);
 			fos.close();
-		} catch (Throwable e) {
+		}
+		catch (Throwable e)
+		{
 			e.printStackTrace();
 		}
 	}
 
-	static String changeExtension(String originalName, String newExtension) {
+	static String changeExtension(String originalName, String newExtension)
+	{
 		int lastDot = originalName.lastIndexOf(".");
-		if (lastDot != -1) {
+		if (lastDot != -1)
 			return originalName.substring(0, lastDot) + newExtension;
-		} else {
+		else
 			return originalName + newExtension;
-		}
 	}
 }
