@@ -3,7 +3,6 @@
 
 package net.thecybershadow.swf.tools;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -66,12 +65,11 @@ public class Deobfuscator extends TagEncoder
 	@Override
 	public void doABC(DoABC tag)
 	{
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		AbcDeobfuscator ad = new AbcDeobfuscator(tag.abc, baos, params);
+		AbcDeobfuscator ad = new AbcDeobfuscator(tag.abc, params);
 		try
 		{
-			ad.deobfuscate();
-			tag.abc = baos.toByteArray();
+			ad.process();
+			tag.abc = ad.toByteArray();
 		}
 		catch (Exception e)
 		{
