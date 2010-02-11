@@ -9,6 +9,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+
+import net.thecybershadow.swf.tools.doabclayout.Layout;
+import net.thecybershadow.swf.tools.doabclayout.Slot;
+import net.thecybershadow.swf.tools.doabclayout.Tag;
 import flash.swf.TagDecoder;
 import flash.swf.TagHandler;
 import flash.swf.tags.DoABC;
@@ -16,12 +23,12 @@ import flash.util.FileUtils;
 
 public class AbcExport extends TagHandler
 {
-	public static void main(String[] args) throws IOException
+	public static void main(String[] args) throws IOException, JAXBException
 	{
 		if (args.length != 1)
 		{
 			System.err.println("Exports DoABC tags from a SWF to individual .abc files.");
-			System.err.println("Usage: AbcExport input.swf");
+			System.err.println("Usage: AbcExport input.swf > abclayout.xml");
 			return;
 		}
 
@@ -31,10 +38,16 @@ public class AbcExport extends TagHandler
 		InputStream in = url.openStream();
 		new TagDecoder(in, url).parse(abcdump);
 		abcdump.finish();
+
+		JAXBContext jc = JAXBContext.newInstance("net.thecybershadow.swf.tools.doabclayout");
+		Marshaller m = jc.createMarshaller();
+		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		m.marshal(abcdump.xmlLayout, System.out);
 	}
 
 	int counter = 0;
 	String prefix;
+	Layout xmlLayout = new Layout();
 
 	public AbcExport(String prefix)
 	{
@@ -47,10 +60,19 @@ public class AbcExport extends TagHandler
 		try
 		{
 			String filename = prefix + counter + ".abc";
-			System.out.println("Writing DoABC tag \"" + tag.name + "\" with flag=" + tag.flag + " to " + filename);
+			//System.out.println("Writing DoABC tag \"" + tag.name + "\" with flag=" + tag.flag + " to " + filename);
 			FileOutputStream fos = new FileOutputStream(filename);
 			fos.write(tag.abc);
 			fos.close();
+
+			Tag xmlTag = new Tag();
+			xmlTag.setFilename(filename);
+			xmlTag.setName(tag.name);
+			xmlTag.setFlag(tag.flag);
+
+			Slot xmlSlot = new Slot();
+			xmlSlot.getTag().add(xmlTag);
+			xmlLayout.getSlot().add(xmlSlot);
 		}
 		catch (Throwable e)
 		{

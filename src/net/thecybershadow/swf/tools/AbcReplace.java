@@ -4,11 +4,20 @@
 package net.thecybershadow.swf.tools;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
+import net.thecybershadow.swf.tools.doabclayout.Layout;
+import net.thecybershadow.swf.tools.doabclayout.Slot;
+import net.thecybershadow.swf.tools.doabclayout.Tag;
 import flash.swf.TagDecoder;
 import flash.swf.TagEncoder;
 import flash.swf.tags.DoABC;
@@ -16,26 +25,23 @@ import flash.util.FileUtils;
 
 public class AbcReplace extends TagEncoder
 {
-	public static void main(String[] args) throws IOException
+	public static void main(String[] args) throws IOException, JAXBException
 	{
-		if (args.length < 2)
+		if (args.length != 2)
 		{
 			System.err.println("Replaces contents of DoABC tags in a SWF file.");
-			System.err.println("Usage: AbcReplace input.swf abc1.abc ... abcN.abc output.swf");
+			System.err.println("Usage: AbcReplace input.swf output.swf < abclayout.xml");
 			return;
 		}
 
 		URL inurl = FileUtils.toURL(new File(args[0]));
 		InputStream in = inurl.openStream();
-		byte[][] abc = new byte[args.length - 2][];
-		for (int i = 0; i < args.length - 2; i++)
-		{
-			File file = new File(args[i + 1]);
-			InputStream abcin = FileUtils.toURL(file).openStream();
-			abc[i] = new byte[(int) file.length()];
-			abcin.read(abc[i]);
-		}
-		AbcReplace abcreplace = new AbcReplace(abc);
+
+		JAXBContext jc = JAXBContext.newInstance("net.thecybershadow.swf.tools.doabclayout");
+		Unmarshaller u = jc.createUnmarshaller();
+		Layout layout = (Layout) u.unmarshal(System.in);
+
+		AbcReplace abcreplace = new AbcReplace(layout);
 		new TagDecoder(in, inurl).parse(abcreplace);
 		abcreplace.finish();
 		FileOutputStream out = new FileOutputStream(args[args.length - 1]);
@@ -44,20 +50,34 @@ public class AbcReplace extends TagEncoder
 
 	int counter = 0;
 	String prefix;
-	byte[][] abc;
+	List<Slot> slots;
 
-	public AbcReplace(byte[][] abc)
+	public AbcReplace(Layout layout)
 	{
-		this.abc = abc;
+		this.slots = layout.getSlot();
 	}
 
 	@Override
-	public void doABC(DoABC tag)
+	public void doABC(DoABC oldTag)
 	{
-		if (counter < abc.length)
+		if (counter < slots.size())
 		{
-			tag.abc = this.abc[counter];
-			super.doABC(tag);
+			List<Tag> tags = slots.get(counter).getTag();
+			for (Tag tag : tags)
+			{
+				try
+				{
+					DoABC newTag = new DoABC(tag.getName(), tag.getFlag());
+					File f = new File(tag.getFilename());
+					FileInputStream fis = new FileInputStream(f);
+					newTag.abc = FileUtils.toByteArray(fis, (int) f.length());
+					super.doABC(newTag);
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
 		}
 		counter++;
 	}
@@ -65,11 +85,11 @@ public class AbcReplace extends TagEncoder
 	@Override
 	public void finish()
 	{
-		if (counter > abc.length)
-			System.err.println("Warning: more ABC tags in SWF file than specified in command line."
+		if (counter > slots.size())
+			System.err.println("Warning: more DoABC tags in SWF file than slots in layout XML."
 					+ "Extra DoABC tags deleted.");
-		if (counter < abc.length)
-			System.err.println("Warning: less ABC tags in SWF file than specified in command line."
-					+ "Extra .abc files omitted.");
+		if (counter < slots.size())
+			System.err.println("Warning: less DoABC tags in SWF file than slots in layout XML."
+					+ "Extra XML slots ignored.");
 	}
 }
