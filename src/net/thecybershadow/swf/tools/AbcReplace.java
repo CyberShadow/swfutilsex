@@ -91,5 +91,6 @@ public class AbcReplace extends TagEncoder
 		if (counter < slots.size())
 			System.err.println("Warning: less DoABC tags in SWF file than slots in layout XML."
 					+ "Extra XML slots ignored.");
+		super.finish();
 	}
 }
