@@ -7,14 +7,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 
 public class AbcStrReplace extends AbcProcessor
 {
 	public static void main(String[] args) throws IOException
 	{
-		if (args.length != 4)
+		if (args.length < 4 || args.length % 2 != 0)
 		{
-			System.err.println("Usage: AbcStrReplace input.abc \"from\" \"to\" output.abc");
+			System.err.println("Usage: AbcStrReplace input.abc \"from1\" \"to1\" ... \"fromN\" \"toN\"output.abc");
 			return;
 		}
 
@@ -22,20 +23,22 @@ public class AbcStrReplace extends AbcProcessor
 		FileInputStream in = new FileInputStream(fin);
 		byte[] abc = new byte[(int) fin.length()];
 		in.read(abc); // FIXME
-		AbcStrReplace d = new AbcStrReplace(abc, args[1], args[2]);
+		HashMap<String, String> map = new HashMap<String, String>();
+		for (int i = 1; i < args.length - 1; i += 2)
+			map.put(args[i], args[i + 1]);
+		AbcStrReplace d = new AbcStrReplace(abc, map);
 		d.process();
-		FileOutputStream out = new FileOutputStream(args[3]);
+		FileOutputStream out = new FileOutputStream(args[args.length - 1]);
 		out.write(d.toByteArray());
 		out.close();
 	}
 
-	private final String from, to;
+	private final HashMap<String, String> map;
 
-	public AbcStrReplace(byte[] abc, String from, String to)
+	public AbcStrReplace(byte[] abc, HashMap<String, String> map)
 	{
 		super(abc);
-		this.from = from;
-		this.to = to;
+		this.map = map;
 	}
 
 	@Override
@@ -48,8 +51,8 @@ public class AbcStrReplace extends AbcProcessor
 		for (int i = 1; i < n; i++)
 		{
 			String s = readUTFBytes(readU32());
-			if (s == from)
-				s = to;
+			if (map.containsKey(s))
+				s = map.get(s);
 			writeU32(s.length());
 			writeUTFBytes(s);
 			stringConstants[i] = s;
